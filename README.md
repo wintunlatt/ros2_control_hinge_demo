@@ -43,9 +43,35 @@ bash scripts/run_rsp.sh
 bash scripts/spawn_robot.sh
 ```
 
-**D: Start controllers**
+**D: Start controllers (robust)**
 ```bash
-bash scripts/start_controllers.sh
+# Source your workspace
+source ~/ws_ros2/install/setup.bash
+
+# Clean slate (ignore errors if not loaded yet)
+ros2 control unload_controller hinge_position_controller || true
+ros2 control unload_controller joint_state_broadcaster   || true
+
+# Start Joint State Broadcaster (configure + activate)
+ros2 run controller_manager spawner joint_state_broadcaster --controller-manager-timeout 30
+
+# Start ForwardCommandController for the hinge WITH PARAMS (configure + activate)
+# Prefer the SOURCE path (works even if not installed); fallback shown below.
+ros2 run controller_manager spawner hinge_position_controller \
+  --controller-manager-timeout 30 \
+  --param-file ~/ws_ros2/src/test_control/config/hinge_forward_params.yaml
+
+# (If you rebuilt and prefer installed paths, use:)
+# ros2 run controller_manager spawner hinge_position_controller \
+#   --controller-manager-timeout 30 \
+#   --param-file ~/ws_ros2/install/test_control/share/test_control/config/hinge_forward_params.yaml
+
+# Verify
+ros2 control list_controllers
+# Expect:
+# joint_state_broadcaster   ... active
+# hinge_position_controller forward_command_controller/ForwardCommandController  active
+
 ```
 
 ### Jog the joint
