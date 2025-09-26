@@ -1,0 +1,5 @@
+hinge_position_controller:
+  ros__parameters:
+    joints:
+      - hinge_joint
+    interface_name: position
